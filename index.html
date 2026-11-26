@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Holiday App</title>
+<style>
+:root{--bg:#eef3f6;--card:#fff;--tx:#17252f;--mut:#5d6f7b;--ac:#0b6e8e;--ac2:#f0b429;--bd:#d5dfe6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f171c;--card:#172229;--tx:#e6eef3;--mut:#93a6b2;--ac:#4cb7d8;--ac2:#f0b429;--bd:#2a3a44;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f171c;--card:#172229;--tx:#e6eef3;--mut:#93a6b2;--ac:#4cb7d8;--ac2:#f0b429;--bd:#2a3a44;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 "Trebuchet MS","Segoe UI",system-ui,sans-serif}
+main{max-width:880px;margin:0 auto;padding:14px}
+h1{font:700 28px/1.1 Georgia,"Times New Roman",serif;margin:6px 0 2px}
+h2{font:700 20px Georgia,serif;margin:0 0 8px}
+h3{font:700 17px Georgia,serif;margin:0}
+h3 small{font:400 13px "Trebuchet MS",sans-serif;color:var(--mut);margin-left:8px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0}
+.day{border-left:5px solid var(--ac)}
+label{display:block;font-size:12px;color:var(--mut)}
+input,select{width:100%;box-sizing:border-box;padding:8px;margin-top:3px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:10px 0}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.g2 b{font-size:13px}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.o{font-size:12px;color:var(--mut)}
+.o b{display:block;font-size:15px;color:var(--tx);padding:8px 0}
+button,.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+[data-theme="dark"] button,[data-theme="dark"] .btn{color:#0f171c}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) button,:root:not([data-theme="light"]) .btn{color:#0f171c}}
+.ghost{background:none;color:var(--mut);border:1px solid var(--bd);font-weight:400;padding:4px 10px}
+.row{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:8px 0}
+.ck{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--tx)}
+.ck input{width:auto;margin:0}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+td,th{padding:7px 6px;border-bottom:1px solid var(--bd);text-align:right}
+td:first-child,th:first-child{text-align:left}
+tr.t td{font-weight:700;border-bottom:2px solid var(--ac2)}
+[hidden]{display:none!important}
+#addAct{display:none}
+.air #addAct{display:inline-block}
+.air .car-only{display:none}
+.two-only{display:none}
+.two .two-only{display:block}
+.tc{display:none}
+.two .tc{display:table-cell}
+.sub{text-align:right;margin-top:6px}
+.note{font-size:13px;color:var(--mut)}
+.bal{padding:10px;border-radius:8px;background:var(--bg);border:1px dashed var(--ac2);margin-top:10px;font-weight:700}
+</style>
+</head>
+<body>
+<main>
+<h1>Holiday App</h1>
+<p class="note">Planifică traseul zi cu zi, vezi costurile și împarte cheltuielile între familii.</p>
+
+<section class="card">
+  <div class="g">
+    <label>Numele excursiei<input data-s="name"></label>
+    <label>Tip vacanță<select data-s="type"><option value="car">Cu mașina</option><option value="air">Cu avionul</option></select></label>
+    <label>Data primei zile<input type="date" data-s="start"></label>
+    <label>Moneda de bază
+      <select data-s="cur"><option>RON</option><option>EUR</option><option>USD</option><option>HUF</option><option>CZK</option><option>PLN</option><option>BGN</option><option>GBP</option><option>CHF</option></select>
+    </label>
+  </div>
+  <div class="row car-only"><label class="ck"><input type="checkbox" data-s="two"> Mergem două familii</label></div>
+  <div class="g two-only">
+    <label>Prima familie<input data-s="fa"></label>
+    <label>A doua familie<input data-s="fb"></label>
+  </div>
+</section>
+
+<div id="days"></div>
+<button id="addDay">+ Ziua următoare</button> <button id="addAct">+ Zi de activități</button>
+
+<section class="card" id="tot"></section>
+
+<section class="card">
+  <h2>Tranzacții</h2>
+  <div class="g">
+    <label>Data<input type="date" id="txd"></label>
+    <label>Descriere<input id="txn" placeholder="ex. plin benzinărie"></label>
+    <label>Valută
+      <select id="txc"><option>RON</option><option>EUR</option><option>USD</option><option>HUF</option><option>CZK</option><option>PLN</option><option>BGN</option><option>GBP</option><option>CHF</option></select>
+    </label>
+    <label>Sumă<input type="number" step="any" inputmode="decimal" id="txa"></label>
+    <label>Curs în moneda de bază<input type="number" step="any" inputmode="decimal" id="txr" placeholder="doar dacă diferă"></label>
+    <label>Domeniu
+      <select id="txm"><option>Combustibil</option><option>Taxe de drum</option><option>Cazare</option><option>Alte cheltuieli</option><option>Mâncare</option><option>Decont</option></select>
+    </label>
+    <label>Tip
+      <select id="txs"><option value="c">Comun</option><option value="p">Personal</option></select>
+    </label>
+    <label class="two-only">Cine a plătit
+      <select id="txp"><option value="A">Prima familie, complet</option><option value="B">A doua familie, complet</option><option value="P">Parțial</option></select>
+    </label>
+    <label class="part" hidden>Plătit de prima familie<input type="number" step="any" inputmode="decimal" id="txpa"></label>
+    <label class="part" hidden>Plătit de a doua familie<input type="number" step="any" inputmode="decimal" id="txpb"></label>
+  </div>
+  <button id="addTx">Adaugă tranzacția</button>
+  <p class="note">La „Decont”, familia care plătește dă banii celeilalte. „Parțial” folosește sumele de mai sus în locul sumei totale.</p>
+  <div id="txl" class="wrap"></div>
+  <div id="bal"></div>
+</section>
+<section class="card">
+  <h2 id="ckh">Checklist</h2>
+  <div class="row"><input id="ckn" placeholder="ex. pașapoarte, asigurare, rezervări" style="flex:1;min-width:180px"><button id="addCk">Adaugă</button></div>
+  <div id="ckl"></div>
+</section>
+<p class="note">Datele se salvează doar în acest browser. Distanța și durata se completează după ce deschizi traseul în Google Maps.</p>
+</main>
+
+<datalist id="eu">
+<option>București</option><option>Iași</option><option>Cluj-Napoca</option><option>Timișoara</option><option>Constanța</option><option>Brașov</option><option>Sibiu</option><option>Oradea</option><option>Arad</option><option>Chișinău</option><option>Budapesta</option><option>Viena</option><option>Salzburg</option><option>München</option><option>Praga</option><option>Bratislava</option><option>Varșovia</option><option>Cracovia</option><option>Berlin</option><option>Dresda</option><option>Zagreb</option><option>Split</option><option>Dubrovnik</option><option>Ljubljana</option><option>Veneția</option><option>Verona</option><option>Milano</option><option>Roma</option><option>Florența</option><option>Napoli</option><option>Paris</option><option>Lyon</option><option>Nisa</option><option>Barcelona</option><option>Madrid</option><option>Lisabona</option><option>Atena</option><option>Salonic</option><option>Sofia</option><option>Varna</option><option>Belgrad</option><option>Sarajevo</option><option>Tirana</option><option>Amsterdam</option><option>Bruxelles</option><option>Zürich</option><option>Innsbruck</option>
+</datalist>
+
+<script>
+const K = 'holidayapp.v1';
+const $ = s => document.querySelector(s);
+let S = {name:'Vacanța noastră', start:'', cur:'RON', two:false, fa:'Familia A', fb:'Familia B', type:'car', chk:[], days:[], tx:[]};
+try { const r = localStorage.getItem(K); if (r) Object.assign(S, JSON.parse(r)); } catch (e) {}
+const newDay = f => ({from:f||'', fromN:'', to:'', toN:'', link:'', hwy:0, toll:0, dep:'', dur:'', km:'', cons:'', price:'', tolls:'', acc:'', food:'', oth:'', kind:'fly', co:'', ap1:'', t1:'', ap2:'', t2:'', stop:0, sAp:'', sA:'', sD:'', fare:'', bag:0, fnote:'', tr1:'', tr2:'', rent:0, rentc:'', place:'', trn:'', fer:0});
+if (!S.days.length) S.days.push(newDay());
+
+const n = x => parseFloat(String(x).replace(',', '.')) || 0;
+const f2 = x => x.toLocaleString('ro-RO', {minimumFractionDigits:2, maximumFractionDigits:2});
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const save = () => { try { localStorage.setItem(K, JSON.stringify(S)); } catch (e) {} };
+
+function inp(i, k, label, type, extra) {
+  const num = type === 'number' ? ' step="any" inputmode="decimal"' : '';
+  return `<label>${label}<input data-i="${i}" data-k="${k}" type="${type || 'text'}"${num} value="${esc(S.days[i][k])}" ${extra || ''}></label>`;
+}
+function dayHtml(d, i) {
+  if (S.type === 'air') return airDay(d, i);
+  return `<article class="card day" data-d="${i}">
+  <div class="hd"><h3>Ziua ${i + 1}<small data-o="date"></small></h3>${S.days.length > 1 ? `<button class="ghost" data-del="${i}">Șterge ziua</button>` : ''}</div>
+  <div class="g2">
+    <div><b>Plecare</b>${inp(i,'from','Localitate','text','list="eu"')}${inp(i,'fromN','Locația exactă (notă)')}</div>
+    <div><b>Sosire</b>${inp(i,'to','Localitate','text','list="eu"')}${inp(i,'toN','Locația exactă (notă)')}</div>
+  </div>
+  <div class="row">
+    <label class="ck"><input type="checkbox" data-i="${i}" data-k="hwy" ${d.hwy ? 'checked' : ''}> Fără autostrăzi</label>
+    <label class="ck"><input type="checkbox" data-i="${i}" data-k="toll" ${d.toll ? 'checked' : ''}> Fără drumuri cu taxă</label>
+    <label class="ck"><input type="checkbox" data-i="${i}" data-k="fer" ${d.fer ? 'checked' : ''}> Fără feriboturi</label>
+    <a class="btn" data-o="map" target="_blank" rel="noopener">Deschide traseul în Google Maps</a>
+  </div>
+  ${inp(i,'link','Link propriu Google Maps (opțional, înlocuiește linkul generat)','url')}
+  <div class="g">
+    ${inp(i,'dep','Ora plecării','time')}
+    ${inp(i,'dur','Durata (ore, din Google Maps)','number')}
+    <div class="o">Ora sosirii<b data-o="arr">—</b></div>
+    ${inp(i,'km','Distanța (km)','number')}
+  </div>
+  <div class="g">
+    ${inp(i,'cons','Consum (l/100 km)','number')}
+    <div class="o">Total litri<b data-o="L">—</b></div>
+    ${inp(i,'price','Preț pe litru','number')}
+    <div class="o">Combustibil total<b data-o="fc">—</b></div>
+  </div>
+  <div class="g">
+    ${inp(i,'tolls','Taxe de drum','number')}
+    ${inp(i,'acc','Cazare','number')}
+    ${inp(i,'food','Mâncare','number')}
+    ${inp(i,'oth','Alte cheltuieli','number')}
+  </div>
+  <div class="sub">Total ziua: <b data-o="dt"></b></div>
+</article>`;
+}
+function renderDays() { $('#days').innerHTML = S.days.map(dayHtml).join(''); }
+
+function gmaps(d) {
+  const av = [d.hwy ? 'highways' : '', d.toll ? 'tolls' : '', d.fer ? 'ferries' : ''].filter(Boolean).join(',');
+  return 'https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=' + encodeURIComponent(d.from) +
+    '&destination=' + encodeURIComponent(d.to) + (av ? '&avoid=' + av : '');
+}
+const dayFuel = d => n(d.km) * n(d.cons) / 100 * n(d.price);
+
+function calc() {
+  document.querySelectorAll('[data-d]').forEach(c => {
+    const i = +c.dataset.d, d = S.days[i];
+    const set = (k, v) => { const e = c.querySelector(`[data-o="${k}"]`); if (e) e.textContent = v; };
+    let arr = '—';
+    if (d.dep && d.dur) {
+      const p = d.dep.split(':').map(Number);
+      let t = p[0] * 60 + p[1] + Math.round(n(d.dur) * 60);
+      const nxt = Math.floor(t / 1440); t %= 1440;
+      arr = String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0') + (nxt ? ` (+${nxt} zi)` : '');
+    }
+    set('arr', arr);
+    const L = n(d.km) * n(d.cons) / 100;
+    set('L', f2(L) + ' l');
+    set('fc', f2(dayFuel(d)) + ' ' + S.cur);
+    set('dt', f2(S.type === 'air' ? air(d).s : dayFuel(d) + n(d.tolls) + n(d.acc) + n(d.food) + n(d.oth)) + ' ' + S.cur);
+    const mp = c.querySelector('[data-o="map"]'); if (mp) mp.href = d.link.trim() || gmaps(d);
+    if (S.start) {
+      const dt = new Date(S.start + 'T12:00'); dt.setDate(dt.getDate() + i);
+      set('date', dt.toLocaleDateString('ro-RO', {weekday:'short', day:'numeric', month:'short'}));
+    } else set('date', '');
+  });
+  if (S.type === 'air') return airTot();
+  const T = {km:0, fuel:0, tolls:0, acc:0, food:0, oth:0};
+  S.days.forEach(d => { T.km += n(d.km); T.fuel += dayFuel(d); T.tolls += n(d.tolls); T.acc += n(d.acc); T.food += n(d.food); T.oth += n(d.oth); });
+  const rows = [['Combustibil', T.fuel, 1], ['Taxe de drum', T.tolls, 1], ['Cazare', T.acc, 1], ['Mâncare', T.food, 0], ['Alte cheltuieli', T.oth, 0]];
+  const total = rows.reduce((a, r) => a + r[1], 0);
+  const fam = rows.reduce((a, r) => a + (r[2] ? r[1] / 2 : r[1]), 0);
+  $('#tot').innerHTML = `<h2>Total ${esc(S.name)}</h2><div class="wrap"><table>
+  <tr><th></th><th>Total</th><th class="tc">Pe familie</th></tr>
+  <tr><td>Distanță</td><td>${f2(T.km)} km</td><td class="tc">—</td></tr>` +
+  rows.map(r => `<tr><td>${r[0]}</td><td>${f2(r[1])} ${S.cur}</td><td class="tc">${f2(r[2] ? r[1] / 2 : r[1])} ${S.cur}</td></tr>`).join('') +
+  `<tr class="t"><td>Total</td><td>${f2(total)} ${S.cur}</td><td class="tc">${f2(fam)} ${S.cur}</td></tr></table></div>
+  <p class="note two-only">Combustibilul, taxele de drum și cazarea se împart la doi. Mâncarea și alte cheltuieli se arată complet pentru fiecare familie.</p>`;
+}
+
+function renderTx() {
+  const names = {A: S.fa, B: S.fb};
+  let net = 0, spent = 0;
+  const by = {};
+  const rows = S.tx.map((t, i) => {
+    if (t.dom === 'Decont') net += t.pB - t.pA;
+    else {
+      spent += t.pA + t.pB;
+      by[t.dom] = (by[t.dom] || 0) + t.pA + t.pB;
+      if (t.sc === 'c') net += (t.pA - t.pB) / 2;
+    }
+    const who = !S.two ? '' : t.pA && t.pB ? 'parțial' : t.pA ? names.A : names.B;
+    return `<tr><td>${esc(t.d)}</td><td>${esc(t.n)}</td><td>${esc(t.dom)}${t.sc === 'p' ? ' (personal)' : ''}</td><td>${f2(t.amt)} ${esc(t.cur)}</td><td>${f2(t.pA + t.pB)} ${S.cur}</td><td>${esc(who)}</td><td><button class="ghost" data-rm="${i}" aria-label="Șterge tranzacția">×</button></td></tr>`;
+  });
+  $('#txl').innerHTML = S.tx.length
+    ? `<table><tr><th>Data</th><th>Descriere</th><th>Domeniu</th><th>Sumă</th><th>În ${S.cur}</th><th>A plătit</th><th></th></tr>${rows.join('')}</table>`
+    : '<p class="note">Nicio tranzacție încă. Adaugă prima plată de mai sus.</p>';
+  const sum = Object.keys(by).map(k => `${esc(k)}: ${f2(by[k])}`).join(' · ');
+  let b = S.tx.length ? `<p class="note">Cheltuit real: <b>${f2(spent)} ${S.cur}</b>${sum ? ' (' + sum + ')' : ''}</p>` : '';
+  if (S.two && S.tx.length) {
+    b += `<div class="bal">${Math.abs(net) < 0.005 ? 'Sunteți la zero, nu datorează nimeni nimic.'
+      : net > 0 ? `${esc(S.fb)} îi datorează ${esc(S.fa)} ${f2(net)} ${S.cur}.`
+      : `${esc(S.fa)} îi datorează ${esc(S.fb)} ${f2(-net)} ${S.cur}.`}</div>`;
+  }
+  $('#bal').innerHTML = b;
+  if (S.type === 'air') calc();
+}
+
+function sync() {
+  document.body.classList.toggle('two', !!S.two);
+  document.querySelectorAll('[data-s]').forEach(e => { if (e.type === 'checkbox') e.checked = !!S.two; else if (document.activeElement !== e) e.value = S[e.dataset.s]; });
+}
+
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.k) S.days[+t.dataset.i][t.dataset.k] = t.type === 'checkbox' ? +t.checked : t.value;
+  else if (t.dataset.s === 'type') setType(t.value);
+  else if (t.dataset.s) S[t.dataset.s] = t.type === 'checkbox' ? t.checked : t.value;
+  else if (t.dataset.ck) { S.chk[+t.dataset.ck].d = +t.checked; renderCk(); save(); return; }
+  else return;
+  save(); cls(); if (t.dataset.k === 'stop') t.closest('[data-d]').querySelector('[data-w="stop"]').hidden = !t.checked; calc(); renderTx();
+});
+$('#txp').addEventListener('change', e => document.querySelectorAll('.part').forEach(l => { l.hidden = e.target.value !== 'P'; }));
+
+document.addEventListener('click', e => {
+  const t = e.target;
+  if (t.id === 'addDay' || t.id === 'addAct') { const d = newDay(S.days[S.days.length - 1].to); d.kind = t.id === 'addAct' ? 'act' : 'fly'; S.days.push(d); renderDays(); calc(); save(); }
+  else if (t.dataset.del) { S.days.splice(+t.dataset.del, 1); renderDays(); calc(); save(); }
+  else if (t.dataset.rm) { S.tx.splice(+t.dataset.rm, 1); renderTx(); save(); }
+  else if (t.id === 'addCk') { const v = $('#ckn').value.trim(); if (v) { S.chk.push({t:v, d:0}); $('#ckn').value = ''; renderCk(); save(); } }
+  else if (t.dataset.rc) { S.chk.splice(+t.dataset.rc, 1); renderCk(); save(); }
+  else if (t.id === 'addTx') {
+    const rate = $('#txc').value === S.cur ? 1 : (n($('#txr').value) || 1);
+    const pay = S.two ? $('#txp').value : 'A';
+    let amt = n($('#txa').value), pA = 0, pB = 0;
+    if (pay === 'P') { pA = n($('#txpa').value); pB = n($('#txpb').value); amt = pA + pB; pA *= rate; pB *= rate; }
+    else if (pay === 'A') pA = amt * rate; else pB = amt * rate;
+    if (amt <= 0) { $('#txa').focus(); return; }
+    S.tx.push({d:$('#txd').value, n:$('#txn').value, cur:$('#txc').value, amt, rate, dom:$('#txm').value, sc:$('#txs').value, pA, pB});
+    ['#txn', '#txa', '#txr', '#txpa', '#txpb'].forEach(s => { $(s).value = ''; });
+    renderTx(); save();
+  }
+});
+
+function setType(t) {
+  S.stash = S.stash || {};
+  S.stash[S.type] = {days:S.days, tx:S.tx, chk:S.chk};
+  const o = S.stash[t] || {days:[newDay()], tx:[], chk:[]};
+  S.type = t; S.days = o.days; S.tx = o.tx; S.chk = o.chk;
+  if (t === 'air') S.two = false;
+  fillDom(); renderDays(); renderCk();
+}
+function cls() {
+  document.body.classList.toggle('two', !!S.two && S.type !== 'air');
+  document.body.classList.toggle('air', S.type === 'air');
+  $('#addDay').textContent = S.type === 'air' ? '+ Zi de zbor' : '+ Ziua următoare';
+}
+function fillDom() {
+  const a = S.type === 'air' ? ['Bilete zbor','Cazare','Transport','Mâncare','Alte cheltuieli'] : ['Combustibil','Taxe de drum','Cazare','Alte cheltuieli','Mâncare','Decont'];
+  $('#txm').innerHTML = a.map(x => `<option>${x}</option>`).join('');
+}
+const air = d => { const o = d.kind === 'act' ? {b:0, t:n(d.trn), a:n(d.acc), f:n(d.food), o:n(d.oth)} : {b:n(d.fare), t:n(d.tr1) + n(d.tr2) + n(d.rentc), a:n(d.acc), f:n(d.food), o:n(d.oth)}; o.s = o.b + o.t + o.a + o.f + o.o; return o; };
+function airDay(d, i) {
+  const fly = d.kind !== 'act';
+  const head = `<div class="hd"><h3>Ziua ${i + 1}<small>${fly ? 'zi de zbor' : 'zi de activități'}</small><small data-o="date"></small></h3>${S.days.length > 1 ? `<button class="ghost" data-del="${i}">Șterge ziua</button>` : ''}</div>`;
+  const ck = (k, l) => `<label class="ck"><input type="checkbox" data-i="${i}" data-k="${k}" ${d[k] ? 'checked' : ''}> ${l}</label>`;
+  if (!fly) return `<article class="card day" data-d="${i}">${head}
+  <div class="g2">${inp(i,'from','Locul de unde pleci','text','list="eu"')}${inp(i,'to','Locul unde ajungi','text','list="eu"')}</div>
+  <div class="g">${inp(i,'trn','Transport','number')}${inp(i,'acc','Cazare','number')}${inp(i,'food','Mâncare','number')}${inp(i,'oth','Alte cheltuieli','number')}</div>
+  <div class="sub">Total ziua: <b data-o="dt"></b></div></article>`;
+  return `<article class="card day" data-d="${i}">${head}
+  <b>Zbor</b>
+  <div class="g">${inp(i,'co','Companie')}${inp(i,'ap1','Aeroport de plecare','text','list="eu"')}${inp(i,'t1','Ora plecării','time')}${inp(i,'ap2','Aeroport de sosire','text','list="eu"')}${inp(i,'t2','Ora sosirii','time')}</div>
+  <div class="row">${ck('stop','Cu escală')}</div>
+  <div class="g" data-w="stop" ${d.stop ? '' : 'hidden'}>${inp(i,'sAp','Aeroport escală')}${inp(i,'sA','Sosire în escală','time')}${inp(i,'sD','Plecare din escală','time')}</div>
+  <b>Bilete și bagaje</b>
+  <div class="g">${inp(i,'fare','Preț bilet','number')}<div class="row">${ck('bag','Bagaj de cală')}</div>${inp(i,'fnote','Notițe')}</div>
+  <b>Transfer</b>
+  <div class="g">${inp(i,'tr1','Transfer la aeroport','number')}${inp(i,'tr2','Transfer de la aeroport','number')}<div class="row">${ck('rent','Închiriere mașină')}</div>${inp(i,'rentc','Cost închiriere','number')}</div>
+  <b>Cazare</b>
+  <div class="g">${inp(i,'place','Locul')}${inp(i,'acc','Cost cazare','number')}</div>
+  <b>Mâncare și alte cheltuieli</b>
+  <div class="g">${inp(i,'food','Mâncare','number')}${inp(i,'oth','Alte cheltuieli','number')}</div>
+  <div class="sub">Total ziua: <b data-o="dt"></b></div></article>`;
+}
+function airTot() {
+  const P = {b:0, a:0, t:0, f:0, o:0}, R = {};
+  S.days.forEach(d => { const x = air(d); P.b += x.b; P.a += x.a; P.t += x.t; P.f += x.f; P.o += x.o; });
+  S.tx.forEach(t => { R[t.dom] = (R[t.dom] || 0) + t.pA + t.pB; });
+  const rows = [['Bilete zbor','b'], ['Cazare','a'], ['Transport','t'], ['Mâncare','f'], ['Alte cheltuieli','o']];
+  let tp = 0, tr = 0;
+  const body = rows.map(r => { const p = P[r[1]], q = R[r[0]] || 0; tp += p; tr += q; return `<tr><td>${r[0]}</td><td>${f2(p)}</td><td>${f2(q)}</td></tr>`; }).join('');
+  $('#tot').innerHTML = `<h2>Total ${esc(S.name)}</h2><div class="wrap"><table><tr><th></th><th>Planificat (${S.cur})</th><th>Real, din tranzacții (${S.cur})</th></tr>${body}<tr class="t"><td>Total</td><td>${f2(tp)}</td><td>${f2(tr)}</td></tr></table></div>`;
+}
+function renderCk() {
+  $('#ckh').textContent = `Checklist (${S.chk.filter(c => c.d).length}/${S.chk.length})`;
+  $('#ckl').innerHTML = S.chk.map((c, i) => `<div class="row"><label class="ck"><input type="checkbox" data-ck="${i}" ${c.d ? 'checked' : ''}> ${esc(c.t)}</label><button class="ghost" data-rc="${i}" aria-label="Șterge">×</button></div>`).join('') || '<p class="note">Adaugă primul punct, de exemplu pașapoarte sau asigurare de călătorie.</p>';
+}
+$('#txd').value = new Date().toISOString().slice(0, 10);
+$('#txc').value = S.cur;
+sync(); cls(); fillDom(); renderDays(); calc(); renderTx(); renderCk();
+</script>
+</body>
+</html>
